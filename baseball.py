@@ -47,7 +47,7 @@ class Game:
         self.batter = Batter(x=BATTER_INITIAL_X, y=BATTER_INITIAL_Y, sprites_dict=BATTER_SPRITES, game=self)
         self.pitcher = Pitcher(x=PITCHER_INITIAL_X, y=PITCHER_INITIAL_Y, sprites_dict=PITCHER_SPRITES, game=self)
         self.ball = Ball(639,554)
-        self.Park = Park()
+        self.park = Park()
         # Initialize game
         pygame.init()
         # Game window

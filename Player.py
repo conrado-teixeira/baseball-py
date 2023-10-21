@@ -6,10 +6,30 @@ class Player(Renderizable):
     def __init__(self, x, y, sprites_dict, initial_sprite):
         super().__init__(x, y, sprites_dict, initial_sprite)
         
+class BaseballBat(Renderizable):
+    def __init__(self, x, y):
+            # The ball is a 4x4 white square
+            super().__init__(x, y, {"bat": pygame.Surface((2, 15))}, "bat")
+            self.set_image()
+            self.image.fill((255, 0, 0))  # Fill the bat with red color
+            self.initial_x = x  # Store the initial Y coordinate
+            self.initial_y = y  # Store the initial Y coordinate
+            self.hidden = False
+            self.animation_delay = 100  # Adjust the delay to control animation speed
+
+    def render(self, screen):
+        if not self.hidden:
+            screen.blit(self.image, (self.x, self.y))
+
 class Batter(Player):
+    def render(self, screen):
+        screen.blit(self.image, (self.x, self.y))
+        self.baseball_bat.render(screen)
+    
     def __init__(self, x, y, sprites_dict, game):
-        self.game = game
         super().__init__(x, y, sprites_dict, "batter_stand")
+        self.game = game
+        self.baseball_bat = BaseballBat(x+20,y+3)
         self.batting = False
         self.animation_delay = 100  # Adjust the delay to control animation speed
 
