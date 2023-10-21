@@ -2,20 +2,73 @@ from Renderizable import Renderizable
 from threading import Thread  # Import Thread for concurrent animations
 import pygame
 
+def rotate_around_center(surface, angle, center_x, center_y):
+    rotated_surface = pygame.transform.rotate(surface, angle)
+    rotated_rect = rotated_surface.get_rect()
+    rotated_rect.center = (center_x, center_y)
+    return rotated_surface
+
 class Player(Renderizable):
     def __init__(self, x, y, sprites_dict, initial_sprite):
         super().__init__(x, y, sprites_dict, initial_sprite)
         
 class BaseballBat(Renderizable):
     def __init__(self, x, y):
-            # The ball is a 4x4 white square
-            super().__init__(x, y, {"bat": pygame.Surface((2, 15))}, "bat")
+        # Create the sprites
+        bat_stand = pygame.Surface((2, 20))
+        bat_swing_3 = pygame.Surface((13, 2))
+
+        # Fill the sprites with a color
+        color = (255, 0, 0)
+        bat_stand.fill(color)
+        bat_swing_3.fill(color)
+
+        # Create the bat image when diagonal
+        bat_swing_2 = pygame.Surface((13, 2), pygame.SRCALPHA)
+        bat_swing_2.fill(color)
+        bat_swing_2 = pygame.transform.rotate(bat_swing_2, -30)
+        
+        # Create the bat image when diagonal
+        bat_swing_4 = pygame.Surface((11, 2), pygame.SRCALPHA)
+        bat_swing_4.fill(color)
+        bat_swing_4 = pygame.transform.rotate(bat_swing_4, 30)
+
+        # Store the sprites in a dictionary
+        sprites = {
+            "stand": bat_stand,
+            "swing_2": bat_swing_2,
+            "swing_3": bat_swing_3,
+            "swing_4": bat_swing_4
+        }
+
+        super().__init__(x, y, sprites, "stand")
+        self.initial_x = x
+        self.initial_y = y
+        self.hidden = True
+        self.animation_delay = 100
+
+    def reset_position(self):
+        self.curr_sprite = "stand"
+        self.x = self.initial_x
+        self.y = self.initial_y
+        self.set_image()
+
+    def position_swing(self, swing_step):
+        if swing_step in [2, 3, 4]:
+            self.curr_sprite = f"swing_{swing_step}"
             self.set_image()
-            self.image.fill((255, 0, 0))  # Fill the bat with red color
-            self.initial_x = x  # Store the initial Y coordinate
-            self.initial_y = y  # Store the initial Y coordinate
-            self.hidden = False
-            self.animation_delay = 100  # Adjust the delay to control animation speed
+            if swing_step == 2:
+                self.x = self.initial_x+10
+                self.y = self.initial_y+20 
+            elif swing_step == 3:
+                self.x = self.initial_x+12
+                self.y = self.initial_y+18
+            elif swing_step == 4:
+                self.x = self.initial_x+12
+                self.y = self.initial_y+8
+            #else:
+            #    self.x = self.initial_x
+            #    self.y = self.initial_y+20 
 
     def render(self, screen):
         if not self.hidden:
@@ -53,17 +106,23 @@ class Batter(Player):
             "batter_swing_3",
             "batter_swing_4",
             "batter_swing_5",
+            "batter_swing_5",
+            "batter_swing_5",
+            "batter_swing_5",
             "batter_stand"
         ]
         for frame in animation:
             self.curr_sprite = frame
             if (self.curr_sprite in ["batter_swing_2","batter_swing_3","batter_swing_4"]):
+                self.baseball_bat.position_swing(int(self.curr_sprite[-1]))
+                # Lógica antiga de rebatida
                 if abs(ball.y - self.y) < 10:  # Adjust this value for the hit tolerance
                     ball.batted = True
             self.set_image()
-            pygame.time.delay(self.animation_delay)
             game.update_display()  # Render the frame
+            pygame.time.delay(self.animation_delay)
         # Reset the flag when animation is complete
+        self.baseball_bat.reset_position() # DESCOMENTAR PRA VOLTAR A ANIMAÇÃO
         self.batting = False
 
 
@@ -97,11 +156,11 @@ class Pitcher(Player):
             i += 1
             self.curr_sprite = frame
             self.set_image()
-            pygame.time.delay(self.animation_delay)  # Delay to control animation speed
             game.update_display()  # Render the frame
             if i == 4:
                 # Show the ball at the specified position on the fourth step
                 thread = Thread(target=ball._animate_pitch, args=[pitch])
                 thread.start()# Animate the batting action
+            pygame.time.delay(self.animation_delay)  # Delay to control animation speed
         # Volta pra posição inicial            
         self.pitching = False  # Reset the flag when animation is complete
