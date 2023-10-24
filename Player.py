@@ -2,11 +2,11 @@ from Renderizable import Renderizable
 from threading import Thread  # Import Thread for concurrent animations
 import pygame
 
-def rotate_around_center(surface, angle, center_x, center_y):
-    rotated_surface = pygame.transform.rotate(surface, angle)
-    rotated_rect = rotated_surface.get_rect()
-    rotated_rect.center = (center_x, center_y)
-    return rotated_surface
+# def rotate_around_center(surface, angle, center_x, center_y):
+#     rotated_surface = pygame.transform.rotate(surface, angle)
+#     rotated_rect = rotated_surface.get_rect()
+#     rotated_rect.center = (center_x, center_y)
+#     return rotated_surface
 
 class Player(Renderizable):
     def __init__(self, x, y, sprites_dict, initial_sprite):
@@ -44,7 +44,7 @@ class BaseballBat(Renderizable):
         super().__init__(x, y, sprites, "stand")
         self.initial_x = x
         self.initial_y = y
-        self.hidden = True
+        self.hidden = False
         self.animation_delay = 100
 
     def reset_position(self):
@@ -66,10 +66,17 @@ class BaseballBat(Renderizable):
             elif swing_step == 4:
                 self.x = self.initial_x+12
                 self.y = self.initial_y+8
-            #else:
-            #    self.x = self.initial_x
-            #    self.y = self.initial_y+20 
 
+    def get_bat_rect(self):
+        angle = 0
+        if self.curr_sprite == "swing_2":
+            angle = -30
+        elif self.curr_sprite == "swing_4":
+            angle = 30
+        bat_rect = self.image.get_rect()  # Use the image attribute of the baseball_bat
+        bat_rect.topleft = (self.x, self.y)  # Set the position of the Rect
+        return bat_rect
+    
     def render(self, screen):
         if not self.hidden:
             screen.blit(self.image, (self.x, self.y))
@@ -87,10 +94,17 @@ class Batter(Player):
         self.animation_delay = 100  # Adjust the delay to control animation speed
 
     def check_for_hit(self, ball):
-        if self.batting and not ball.caught and not ball.batted and not ball.hidden:
-            # Check if the ball's Y coordinate is close to the batter's Y coordinate
-            if abs(ball.y - self.y) < 10:  # Adjust this value for the hit tolerance
+        if self.batting and not ball.caught and not ball.batted:
+            ball_rect = pygame.Rect(ball.x, ball.y, ball.image.get_width(), ball.image.get_height())
+            bat_rect = self.baseball_bat.get_bat_rect()
+            if ball_rect.colliderect(bat_rect):
                 ball.batted = True
+                print("CONTACT!")
+                self.game.save_screenshot("contact")
+            else:
+                print("STRIKE!")
+                #self.game.save_screenshot("swing_n_miss") # DESCOMENTAR PRA PRINT
+                self.batting = False
 
     def bat(self, ball):
         if not self.batting:
@@ -113,13 +127,12 @@ class Batter(Player):
         ]
         for frame in animation:
             self.curr_sprite = frame
+            self.set_image()
+            game.update_display()  # Render the frame
             if (self.curr_sprite in ["batter_swing_2","batter_swing_3","batter_swing_4"]):
                 self.baseball_bat.position_swing(int(self.curr_sprite[-1]))
                 # Lógica antiga de rebatida
-                if abs(ball.y - self.y) < 10:  # Adjust this value for the hit tolerance
-                    ball.batted = True
-            self.set_image()
-            game.update_display()  # Render the frame
+                self.check_for_hit(ball)
             pygame.time.delay(self.animation_delay)
         # Reset the flag when animation is complete
         self.baseball_bat.reset_position() # DESCOMENTAR PRA VOLTAR A ANIMAÇÃO
@@ -134,7 +147,7 @@ class Pitcher(Player):
         self.game = game
 
     def pitch(self, ball, pitch="fastball"):
-        if not self.pitching:
+        if ball.x == ball.initial_x and ball.y == ball.initial_y:
             self.pitching = True
             thread = Thread(target=self._animate_pitch(ball, pitch, self.game))
             thread.start()# Animate the batting action

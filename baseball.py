@@ -1,7 +1,10 @@
+# PYTHON MODULES
 import pygame
 import os
 import sys
+from datetime import datetime
 
+# GAME MODULES
 from Background import Park
 from Ball import Ball
 from Player import Batter, Pitcher
@@ -38,6 +41,10 @@ PITCHER_SPRITES = {
 }
 
 class Game:
+    def save_screenshot(self, filename="print"):
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S_")
+        pygame.image.save(self.window.screen, f"prints/{timestamp}{filename}.jpg")
+    
     def update_display(self):
         self.window.render(gameObjects = [self.pitcher, self.batter, self.ball])
         pygame.display.flip()
@@ -46,7 +53,7 @@ class Game:
         # Game Elements
         self.batter = Batter(x=BATTER_INITIAL_X, y=BATTER_INITIAL_Y, sprites_dict=BATTER_SPRITES, game=self)
         self.pitcher = Pitcher(x=PITCHER_INITIAL_X, y=PITCHER_INITIAL_Y, sprites_dict=PITCHER_SPRITES, game=self)
-        self.ball = Ball(639,554)
+        self.ball = Ball(639,554,game=self)
         self.park = Park()
         # Initialize game
         pygame.init()
