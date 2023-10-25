@@ -8,6 +8,8 @@ import pygame
 #     rotated_rect.center = (center_x, center_y)
 #     return rotated_surface
 
+ok_to_print = False
+
 class Player(Renderizable):
     def __init__(self, x, y, sprites_dict, initial_sprite):
         super().__init__(x, y, sprites_dict, initial_sprite)
@@ -55,8 +57,6 @@ class BaseballBat(Renderizable):
 
     def position_swing(self, swing_step):
         if swing_step in [2, 3, 4]:
-            self.curr_sprite = f"swing_{swing_step}"
-            self.set_image()
             if swing_step == 2:
                 self.x = self.initial_x+10
                 self.y = self.initial_y+20 
@@ -66,6 +66,9 @@ class BaseballBat(Renderizable):
             elif swing_step == 4:
                 self.x = self.initial_x+12
                 self.y = self.initial_y+8
+            self.curr_sprite = f"swing_{swing_step}"
+            self.set_image()
+            ok_to_print = True
 
     def get_bat_rect(self):
         angle = 0
@@ -94,17 +97,22 @@ class Batter(Player):
         self.animation_delay = 100  # Adjust the delay to control animation speed
 
     def check_for_hit(self, ball):
+        no_contact = 0
         if self.batting and not ball.caught and not ball.batted:
             ball_rect = pygame.Rect(ball.x, ball.y, ball.image.get_width(), ball.image.get_height())
             bat_rect = self.baseball_bat.get_bat_rect()
             if ball_rect.colliderect(bat_rect):
                 ball.batted = True
                 print("CONTACT!")
-                self.game.save_screenshot("contact")
+                if ok_to_print:
+                    self.game.save_screenshot("contact")
+                    ok_to_print = False
             else:
-                print("STRIKE!")
-                #self.game.save_screenshot("swing_n_miss") # DESCOMENTAR PRA PRINT
-                self.batting = False
+                no_contact += 1
+                if no_contact == 3:
+                    if ok_to_print:
+                        self.game.save_screenshot("swing_n_miss")
+                        self.batting = False
 
     def bat(self, ball):
         if not self.batting:
@@ -113,6 +121,33 @@ class Batter(Player):
             thread.start()# Animate the batting action
 
     def _animate_batting(self,ball, game):
+        bunt_C_animation = [
+            self.curr_sprite,
+            "batter_swing_4",
+            "batter_swing_4",
+            "batter_swing_4",
+            "batter_swing_4",
+            "batter_swing_4",
+            "batter_stand"
+        ]
+        bunt_L_animation = [
+            self.curr_sprite,
+            "batter_swing_3",
+            "batter_swing_3",
+            "batter_swing_3",
+            "batter_swing_3",
+            "batter_swing_3",
+            "batter_stand"
+        ]
+        bunt_R_animation = [
+            self.curr_sprite,
+            "batter_swing_5",
+            "batter_swing_5",
+            "batter_swing_5",
+            "batter_swing_5",
+            "batter_swing_5",
+            "batter_stand"
+        ]
         animation = [
             self.curr_sprite,
             "batter_swing_1",

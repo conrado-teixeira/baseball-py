@@ -17,11 +17,11 @@ BATTER_INITIAL_X = 603
 BATTER_INITIAL_Y = 663
 BATTER_SPRITES = {
     "batter_stand" : pygame.image.load("assets/batter/batter_stand.png"),
-    "batter_swing_1" : pygame.image.load("assets/batter/batter_swing_1.png"),
-    "batter_swing_2" : pygame.image.load("assets/batter/batter_swing_2.png"),
-    "batter_swing_3" : pygame.image.load("assets/batter/batter_swing_3.png"),
-    "batter_swing_4" : pygame.image.load("assets/batter/batter_swing_4.png"),
-    "batter_swing_5" : pygame.image.load("assets/batter/batter_swing_5.png")
+    "batter_swing_1" : pygame.image.load("assets/batter/batter_swing_1.png"), #windup
+    "batter_swing_2" : pygame.image.load("assets/batter/batter_swing_2.png"), # early
+    "batter_swing_3" : pygame.image.load("assets/batter/batter_swing_3.png"), # perfect
+    "batter_swing_4" : pygame.image.load("assets/batter/batter_swing_4.png"), # late
+    "batter_swing_5" : pygame.image.load("assets/batter/batter_swing_5.png") # final
 }
 
 PITCHER_INITIAL_X = 620
