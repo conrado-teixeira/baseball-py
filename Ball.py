@@ -18,6 +18,10 @@ class Ball(Renderizable):
         self.batted = False
         self.animation_delay = 100  # Adjust the delay to control animation speed
 
+    def move(self):
+        self.y += self.y_speed
+        self.x += self.x_speed
+    
     def render(self, screen):
         if not self.hidden:
             screen.blit(self.image, (self.x, self.y))
@@ -25,6 +29,7 @@ class Ball(Renderizable):
     def reset_position(self):
         self.x = self.initial_x
         self.y = self.initial_y
+        self.reset_speed()
         self.hide()
 
     def show(self):
@@ -35,31 +40,55 @@ class Ball(Renderizable):
         # Hide the ball (make it transparent)
         self.hidden = True
 
+    def fastball(self):
+        self.y_speed = 10
+        self.x_speed = 0
+        self.move()
+
+    def slider(self):
+        self.y_speed = 10
+        self.x_speed = 0.5
+        self.move()
+    
+    def changeup(self):
+        self.y_speed = 10
+        self.x_speed = -0.25  # Change X to simulate movement
+        self.move()
+        # decrease speed
+        self.y_speed *= 0.97  # Decrease speed with an exponential decay
+        # Ensure y_speed never goes below a minimum threshold
+        min_y_speed = 8  # Adjust this threshold as needed
+        self.y_speed = max(self.y_speed, min_y_speed)
+        self.y_speed = self.y_speed * 0.99  # Decrease speed
+        
+    def reset_speed(self):
+        self.y_speed = 10
+        self.x_speed = 0
+
+    def bat_contact(self):
+        angle = math.atan2(self.y - self.game.batter.baseball_bat.y, self.x - self.game.batter.baseball_bat.x)
+        self.x_speed = self.x_speed * math.cos(angle) + self.y_speed * math.cos(angle)
+        self.y_speed = -1 * self.y_speed * math.sin(angle)
+        
     def _animate_pitch(self, pitch):
         self.show()
+        
+        # GOING TOWARDS THE PLATE
         while self.y < 722 and not self.caught and not self.batted:
             pygame.time.delay(self.animation_delay)
             if (pitch == "fastball"):
-                self.y += self.y_speed  # Increase Y to simulate the pitch
+                self.fastball()
             elif (pitch == "slider"):
-                self.y += self.y_speed  # Increase Y to simulate the pitch
-                self.x += self.x_speed  # Increase X to simulate movement
+                self.slider()
             elif (pitch == "changeup"):
-                self.y += self.y_speed * 0.8  # Increase Y to simulate the pitch
-                self.y_speed = self.y_speed * 0.99  # Decrease speed
-                self.x -= self.x_speed/2  # Change X to simulate movement
+                self.changeup()
+        
+        # CONTACT
         if self.batted:
-            angle = math.atan2(self.y - self.game.batter.baseball_bat.y, self.x - self.game.batter.baseball_bat.x)
-            print(angle)
-            batted_x_speed = self.x_speed * math.cos(angle) + self.y_speed * math.cos(angle)
-            print(f"batted_x_speed = {batted_x_speed}")
-            batted_y_speed = self.y_speed * math.sin(angle)
-            print(f"batted_y_speed = {batted_y_speed}")
+            self.bat_contact()
             while self.y > 0: # HOME RUN
-                self.y -= batted_y_speed  
-                self.x -= batted_x_speed
+                self.move()
                 pygame.time.delay(self.animation_delay)
             self.batted = False
 
-        self.y_speed = 10
         self.reset_position()

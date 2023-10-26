@@ -8,8 +8,6 @@ import pygame
 #     rotated_rect.center = (center_x, center_y)
 #     return rotated_surface
 
-ok_to_print = False
-
 class Player(Renderizable):
     def __init__(self, x, y, sprites_dict, initial_sprite):
         super().__init__(x, y, sprites_dict, initial_sprite)
@@ -46,7 +44,7 @@ class BaseballBat(Renderizable):
         super().__init__(x, y, sprites, "stand")
         self.initial_x = x
         self.initial_y = y
-        self.hidden = False
+        self.hidden = True
         self.animation_delay = 100
 
     def reset_position(self):
@@ -68,7 +66,6 @@ class BaseballBat(Renderizable):
                 self.y = self.initial_y+8
             self.curr_sprite = f"swing_{swing_step}"
             self.set_image()
-            ok_to_print = True
 
     def get_bat_rect(self):
         angle = 0
@@ -97,26 +94,23 @@ class Batter(Player):
         self.animation_delay = 100  # Adjust the delay to control animation speed
 
     def check_for_hit(self, ball):
-        no_contact = 0
         if self.batting and not ball.caught and not ball.batted:
             ball_rect = pygame.Rect(ball.x, ball.y, ball.image.get_width(), ball.image.get_height())
             bat_rect = self.baseball_bat.get_bat_rect()
             if ball_rect.colliderect(bat_rect):
                 ball.batted = True
                 print("CONTACT!")
-                if ok_to_print:
-                    self.game.save_screenshot("contact")
-                    ok_to_print = False
+                self.game.save_screenshot("contact")
             else:
-                no_contact += 1
-                if no_contact == 3:
-                    if ok_to_print:
-                        self.game.save_screenshot("swing_n_miss")
-                        self.batting = False
+                self.no_contact += 1
+                if self.no_contact == 3:
+                    print("STRIKE!")
+                    self.game.save_screenshot("swing_n_miss")
 
     def bat(self, ball):
         if not self.batting:
             self.batting = True
+            self.no_contact = 0
             thread = Thread(target=self._animate_batting, args=[ball, self.game])
             thread.start()# Animate the batting action
 
@@ -166,7 +160,6 @@ class Batter(Player):
             game.update_display()  # Render the frame
             if (self.curr_sprite in ["batter_swing_2","batter_swing_3","batter_swing_4"]):
                 self.baseball_bat.position_swing(int(self.curr_sprite[-1]))
-                # Lógica antiga de rebatida
                 self.check_for_hit(ball)
             pygame.time.delay(self.animation_delay)
         # Reset the flag when animation is complete
