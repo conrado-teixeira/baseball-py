@@ -13,6 +13,9 @@ from Window import Window
 directory_path = os.path.dirname(os.path.abspath(__file__))
 os.chdir(directory_path)
 
+BALL_INITIAL_X = 636
+BALL_INITIAL_Y = 554
+
 BATTER_INITIAL_X = 603
 BATTER_INITIAL_Y = 663
 BATTER_SPRITES = {
@@ -24,7 +27,7 @@ BATTER_SPRITES = {
     "batter_swing_5" : pygame.image.load("assets/batter/batter_swing_5.png") # final
 }
 
-PITCHER_INITIAL_X = 620
+PITCHER_INITIAL_X = 617
 PITCHER_INITIAL_Y = 538
 PITCHER_SPRITES = {
     "pitcher_look_c" : pygame.image.load("assets/pitcher/pitcher_look_c.png"),
@@ -53,7 +56,7 @@ class Game:
         # Game Elements
         self.batter = Batter(x=BATTER_INITIAL_X, y=BATTER_INITIAL_Y, sprites_dict=BATTER_SPRITES, game=self)
         self.pitcher = Pitcher(x=PITCHER_INITIAL_X, y=PITCHER_INITIAL_Y, sprites_dict=PITCHER_SPRITES, game=self)
-        self.ball = Ball(639,554,game=self)
+        self.ball = Ball(BALL_INITIAL_X,BALL_INITIAL_Y,game=self)
         self.park = Park()
         # Initialize game
         pygame.init()
@@ -76,13 +79,19 @@ class Game:
                 elif event.type == pygame.KEYDOWN:
                     # PITCHES
                     if event.key == pygame.K_p:
-                        self.pitcher.pitch(self.ball)
+                        self.pitcher.pitch()
                     elif event.key == pygame.K_s:
-                        self.pitcher.pitch(self.ball, pitch="slider")
+                        self.pitcher.pitch("slider")
                     elif event.key == pygame.K_c:
-                        self.pitcher.pitch(self.ball, pitch="changeup")
+                        self.pitcher.pitch("changeup")
                     elif event.key == pygame.K_b:
-                        self.batter.bat(self.ball)
+                        self.batter.bat()
+                    elif event.key == pygame.K_UP:
+                        self.batter.bat("bunt_C")
+                    elif event.key == pygame.K_LEFT:
+                        self.batter.bat("bunt_L")
+                    elif event.key == pygame.K_RIGHT:
+                        self.batter.bat("bunt_R")
 
             self.update_display()
             # Cap the frame rate

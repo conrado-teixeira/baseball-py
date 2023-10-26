@@ -99,65 +99,32 @@ class Batter(Player):
             bat_rect = self.baseball_bat.get_bat_rect()
             if ball_rect.colliderect(bat_rect):
                 ball.batted = True
-                print("CONTACT!")
-                self.game.save_screenshot("contact")
+                print(f"CONTACT AT {self.curr_sprite}!")
             else:
                 self.no_contact += 1
                 if self.no_contact == 3:
                     print("STRIKE!")
                     self.game.save_screenshot("swing_n_miss")
 
-    def bat(self, ball):
+    def bat(self, swing="swing"):
         if not self.batting:
             self.batting = True
             self.no_contact = 0
-            thread = Thread(target=self._animate_batting, args=[ball, self.game])
+            thread = Thread(target=self._animate_batting, args=[swing])
             thread.start()# Animate the batting action
 
-    def _animate_batting(self,ball, game):
-        bunt_C_animation = [
-            self.curr_sprite,
-            "batter_swing_4",
-            "batter_swing_4",
-            "batter_swing_4",
-            "batter_swing_4",
-            "batter_swing_4",
-            "batter_stand"
-        ]
-        bunt_L_animation = [
-            self.curr_sprite,
-            "batter_swing_3",
-            "batter_swing_3",
-            "batter_swing_3",
-            "batter_swing_3",
-            "batter_swing_3",
-            "batter_stand"
-        ]
-        bunt_R_animation = [
-            self.curr_sprite,
-            "batter_swing_5",
-            "batter_swing_5",
-            "batter_swing_5",
-            "batter_swing_5",
-            "batter_swing_5",
-            "batter_stand"
-        ]
-        animation = [
-            self.curr_sprite,
-            "batter_swing_1",
-            "batter_swing_2",
-            "batter_swing_3",
-            "batter_swing_4",
-            "batter_swing_5",
-            "batter_swing_5",
-            "batter_swing_5",
-            "batter_swing_5",
-            "batter_stand"
-        ]
-        for frame in animation:
+    def _animate_batting(self,swing):
+        ball = self.game.ball
+        animations = {
+            "bunt_C" : ["batter_stand", "batter_swing_3", "batter_swing_3", "batter_swing_3", "batter_swing_3", "batter_swing_3", "batter_stand"],
+            "bunt_L" : ["batter_stand", "batter_swing_4", "batter_swing_4", "batter_swing_4", "batter_swing_4", "batter_swing_4", "batter_stand"],
+            "bunt_R" : ["batter_stand", "batter_swing_2", "batter_swing_2", "batter_swing_2", "batter_swing_2", "batter_swing_2", "batter_stand"],
+            "swing" : ["batter_stand", "batter_swing_1", "batter_swing_2", "batter_swing_3", "batter_swing_4", "batter_swing_5", "batter_swing_5", "batter_swing_5", "batter_swing_5", "batter_stand"],
+        }
+        for frame in animations[swing]:
             self.curr_sprite = frame
             self.set_image()
-            game.update_display()  # Render the frame
+            self.game.update_display()  # Render the frame
             if (self.curr_sprite in ["batter_swing_2","batter_swing_3","batter_swing_4"]):
                 self.baseball_bat.position_swing(int(self.curr_sprite[-1]))
                 self.check_for_hit(ball)
@@ -174,13 +141,13 @@ class Pitcher(Player):
         self.animation_delay = 100  # Adjust the delay to control animation speed
         self.game = game
 
-    def pitch(self, ball, pitch="fastball"):
-        if ball.x == ball.initial_x and ball.y == ball.initial_y:
+    def pitch(self, pitch="fastball"):
+        if self.game.ball.x == self.game.ball.initial_x and self.game.ball.y == self.game.ball.initial_y:
             self.pitching = True
-            thread = Thread(target=self._animate_pitch(ball, pitch, self.game))
+            thread = Thread(target=self._animate_pitch(pitch))
             thread.start()# Animate the batting action
 
-    def _animate_pitch(self, ball, pitch, game):
+    def _animate_pitch(self, pitch):
         animation = [
             self.curr_sprite,
             "pitcher_pitch_1",
@@ -197,10 +164,10 @@ class Pitcher(Player):
             i += 1
             self.curr_sprite = frame
             self.set_image()
-            game.update_display()  # Render the frame
+            self.game.update_display()  # Render the frame
             if i == 4:
                 # Show the ball at the specified position on the fourth step
-                thread = Thread(target=ball._animate_pitch, args=[pitch])
+                thread = Thread(target=self.game.ball._animate_pitch, args=[pitch])
                 thread.start()# Animate the batting action
             pygame.time.delay(self.animation_delay)  # Delay to control animation speed
         # Volta pra posição inicial            

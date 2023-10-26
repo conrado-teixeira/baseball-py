@@ -2,10 +2,13 @@ from Renderizable import Renderizable
 import pygame
 import math
 
+BALL_HEIGHT = 5
+BALL_WIDTH = 5
+
 class Ball(Renderizable):
     def __init__(self, x, y, game):
         # The ball is a 4x4 white square
-        super().__init__(x, y, {"ball": pygame.Surface((4, 4))}, "ball")
+        super().__init__(x, y, {"ball": pygame.Surface((BALL_WIDTH, BALL_HEIGHT))}, "ball")
         self.game = game
         self.set_image()
         self.image.fill((255, 255, 255))  # Fill the ball with white color
@@ -65,8 +68,32 @@ class Ball(Renderizable):
         self.y_speed = 10
         self.x_speed = 0
 
-    def bat_contact(self):
-        angle = math.atan2(self.y - self.game.batter.baseball_bat.y, self.x - self.game.batter.baseball_bat.x)
+    def hit_by_bat(self, pitch="?"):
+        self.game.save_screenshot("contact")
+        ball_center_x, ball_center_y = self.image.get_rect().center
+        ball_center_y += self.y
+        ball_center_x += self.x
+        
+        bat_center_y, bat_center_x = self.game.batter.baseball_bat.image.get_rect().center
+        bat_center_x += self.game.batter.baseball_bat.x
+        bat_center_y += self.game.batter.baseball_bat.y
+        
+        coordinates_text = f"""
+        ball_center_y = {ball_center_y}
+        ball_center_x = {ball_center_x}
+        bat_center_y = {bat_center_y}
+        bat_center_x = {bat_center_x}
+        """
+        print(coordinates_text)
+        
+        angle = math.atan2(ball_center_y - bat_center_y, ball_center_x - bat_center_x)
+        
+        print_text = f"""Pitch: {pitch}
+        Angle: {angle}
+        SEN: {math.sin(angle)}
+        COS: {math.cos(angle)}"""
+        print(print_text)
+        
         self.x_speed = self.x_speed * math.cos(angle) + self.y_speed * math.cos(angle)
         self.y_speed = -1 * self.y_speed * math.sin(angle)
         
@@ -85,7 +112,7 @@ class Ball(Renderizable):
         
         # CONTACT
         if self.batted:
-            self.bat_contact()
+            self.hit_by_bat(pitch=pitch)
             while self.y > 0: # HOME RUN
                 self.move()
                 pygame.time.delay(self.animation_delay)
