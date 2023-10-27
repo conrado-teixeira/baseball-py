@@ -14,21 +14,39 @@ class Player(Renderizable):
         self.game = game
         self.animation_delay = 100
 
+    def get_center(self):
+        return (
+            self.image.get_rect().center[0]+self.x,
+            self.image.get_rect().center[1]+self.y
+        )
+
+    def position_by_center(self, destination):
+        relative_center = self.image.get_rect().center
+        self.x = destination[0] - relative_center[0]
+        self.y = destination[1] - relative_center[1]
+
     def _animate_run(self, destination):
-        # Implement the logic to make the runner move towards the given destination.
-        # You can calculate the direction and distance to the destination and update
-        # the runner's position accordingly.
+        def arrival():
+            return self.get_center()[0] == dest_x and self.get_center()[1] == dest_y
+                
         dest_x, dest_y = destination
-        while not (self.x == dest_x and self.y == dest_y):
+
+        while not arrival():
             pygame.time.delay(self.animation_delay)
-            self.x, self.y
-            dx = dest_x - self.x
-            dy = dest_y - self.y
+            # GET THE VECTOR
+            center = self.get_center()
+            dx = dest_x - center[0]
+            dy = dest_y - center[1]
+            # NORMALIZE THE VECTOR
             distance = (dx ** 2 + dy ** 2) ** 0.5
             dx /= distance
             dy /= distance
-            self.x += dx * self.speed
-            self.y += dy * self.speed
+            # MOVE ALONG VECTOR
+            if distance <= self.speed:
+                self.position_by_center(destination)
+            else:
+                self.x += dx * self.speed
+                self.y += dy * self.speed
         
 class BaseballBat(Renderizable):
     def __init__(self, x, y):
