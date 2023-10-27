@@ -7,7 +7,7 @@ from datetime import datetime
 # GAME MODULES
 from Background import Park
 from Ball import Ball
-from Player import Batter, Pitcher
+from Player import Batter, Pitcher, Runner
 from Window import Window
 
 directory_path = os.path.dirname(os.path.abspath(__file__))
@@ -49,13 +49,34 @@ class Game:
         pygame.image.save(self.window.screen, f"prints/{timestamp}{filename}.jpg")
     
     def update_display(self):
-        self.window.render(gameObjects = [self.pitcher, self.batter, self.ball])
+        self.window.render(gameObjects = [self.team_defense, self.team_offense, self.ball])
         pygame.display.flip()
     
+    def ball_is_hit(self):
+        self.team_offense[self.curr_batter] = Runner(x=BATTER_INITIAL_X, y=BATTER_INITIAL_Y, sprites_dict=BATTER_SPRITES, game=self)
+        batter = self.team_offense[self.curr_batter]
+        batter.go_to_first_base()
+        if (self.curr_batter == 9):
+            self.curr_batter = 0
+        else:
+            self.curr_batter += 1      
+
+    def set_batter(self):
+        if (len(self.team_offense) <= self.curr_batter):
+            self.team_offense.append(Batter(x=BATTER_INITIAL_X, y=BATTER_INITIAL_Y, sprites_dict=BATTER_SPRITES, game=self))
+        else:
+            self.team_offense[self.curr_batter] = Batter(x=BATTER_INITIAL_X, y=BATTER_INITIAL_Y, sprites_dict=BATTER_SPRITES, game=self)
+
     def __init__(self):
         # Game Elements
-        self.batter = Batter(x=BATTER_INITIAL_X, y=BATTER_INITIAL_Y, sprites_dict=BATTER_SPRITES, game=self)
-        self.pitcher = Pitcher(x=PITCHER_INITIAL_X, y=PITCHER_INITIAL_Y, sprites_dict=PITCHER_SPRITES, game=self)
+        self.team_offense = []
+        self.curr_batter = 0
+        self.set_batter()
+        self.team_defense = [
+            Pitcher(x=PITCHER_INITIAL_X, y=PITCHER_INITIAL_Y, sprites_dict=PITCHER_SPRITES, game=self)
+        ]
+        self.batter = self.team_offense[self.curr_batter]
+        self.pitcher = self.team_defense[0]
         self.ball = Ball(BALL_INITIAL_X,BALL_INITIAL_Y,game=self)
         self.park = Park()
         # Initialize game

@@ -13,7 +13,8 @@ class Window:
 
     def render(self, gameObjects):
         self.background.render(self.screen)
-        for obj in gameObjects:
+        for obj in gameObjects[0] + gameObjects[1]:
             obj.render(self.screen)
+        gameObjects[2].render(self.screen)
                        
     pass

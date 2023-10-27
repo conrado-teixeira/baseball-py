@@ -9,9 +9,11 @@ class Ball(Renderizable):
     def __init__(self, x, y, game):
         # The ball is a 4x4 white square
         super().__init__(x, y, {"ball": pygame.Surface((BALL_WIDTH, BALL_HEIGHT))}, "ball")
+        self.radius = 2
         self.game = game
         self.set_image()
-        self.image.fill((255, 255, 255))  # Fill the ball with white color
+        self.color = (255, 255, 255)
+        self.image.fill(self.color)  # Fill the ball with white color
         self.initial_x = x  # Store the initial Y coordinate
         self.initial_y = y  # Store the initial Y coordinate
         self.y_speed = 10  # Adjust this value to control the pitch speed
@@ -27,7 +29,8 @@ class Ball(Renderizable):
     
     def render(self, screen):
         if not self.hidden:
-            screen.blit(self.image, (self.x, self.y))
+            pygame.draw.circle(screen, self.color, (self.x, self.y), self.radius)
+            # screen.blit(self.image, (self.x, self.y))
     
     def reset_position(self):
         self.x = self.initial_x

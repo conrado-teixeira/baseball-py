@@ -16,7 +16,7 @@ class Park:
         # Home
         self.bases.append(Base(0, 0))
         # 1
-        self.bases.append(Base(0, 0))
+        self.bases.append(Base(865, 569))
         # 2
         self.bases.append(Base(0, 0))
         # 3

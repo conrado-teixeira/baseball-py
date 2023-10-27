@@ -9,8 +9,26 @@ import pygame
 #     return rotated_surface
 
 class Player(Renderizable):
-    def __init__(self, x, y, sprites_dict, initial_sprite):
+    def __init__(self, x, y, sprites_dict, initial_sprite, game):
         super().__init__(x, y, sprites_dict, initial_sprite)
+        self.game = game
+        self.animation_delay = 100
+
+    def _animate_run(self, destination):
+        # Implement the logic to make the runner move towards the given destination.
+        # You can calculate the direction and distance to the destination and update
+        # the runner's position accordingly.
+        dest_x, dest_y = destination
+        while not (self.x == dest_x and self.y == dest_y):
+            pygame.time.delay(self.animation_delay)
+            self.x, self.y
+            dx = dest_x - self.x
+            dy = dest_y - self.y
+            distance = (dx ** 2 + dy ** 2) ** 0.5
+            dx /= distance
+            dy /= distance
+            self.x += dx * self.speed
+            self.y += dy * self.speed
         
 class BaseballBat(Renderizable):
     def __init__(self, x, y):
@@ -45,7 +63,6 @@ class BaseballBat(Renderizable):
         self.initial_x = x
         self.initial_y = y
         self.hidden = True
-        self.animation_delay = 100
 
     def reset_position(self):
         self.curr_sprite = "stand"
@@ -87,11 +104,9 @@ class Batter(Player):
         self.baseball_bat.render(screen)
     
     def __init__(self, x, y, sprites_dict, game):
-        super().__init__(x, y, sprites_dict, "batter_stand")
-        self.game = game
+        super().__init__(x, y, sprites_dict, "batter_stand", game)
         self.baseball_bat = BaseballBat(x+20,y+3)
         self.batting = False
-        self.animation_delay = 100  # Adjust the delay to control animation speed
 
     def check_for_hit(self, ball):
         if self.batting and not ball.caught and not ball.batted:
@@ -99,6 +114,7 @@ class Batter(Player):
             bat_rect = self.baseball_bat.get_bat_rect()
             if ball_rect.colliderect(bat_rect):
                 ball.batted = True
+                self.game.ball_is_hit()
                 print(f"CONTACT AT {self.curr_sprite}!")
             else:
                 self.no_contact += 1
@@ -133,13 +149,21 @@ class Batter(Player):
         self.baseball_bat.reset_position() # DESCOMENTAR PRA VOLTAR A ANIMAÇÃO
         self.batting = False
 
+class Runner(Player):
+    def __init__(self, x, y, sprites_dict, game):
+        super().__init__(x, y, sprites_dict, "batter_stand", game)
+        self.speed = 5
+        # Add any additional attributes or methods specific to the Runner class here
 
+    def go_to_first_base(self):
+        base_coordinates = (self.game.park.bases[1].x, self.game.park.bases[1].y)
+        thread = Thread(target=self._animate_run(base_coordinates))
+        thread.start()
+        
 class Pitcher(Player):
     def __init__(self, x, y, sprites_dict, game):
-        super().__init__(x, y, sprites_dict, "pitcher_stand_c")
+        super().__init__(x, y, sprites_dict, "pitcher_stand_c", game)
         self.pitching = False  # Flag to control the animation
-        self.animation_delay = 100  # Adjust the delay to control animation speed
-        self.game = game
 
     def pitch(self, pitch="fastball"):
         if self.game.ball.x == self.game.ball.initial_x and self.game.ball.y == self.game.ball.initial_y:
