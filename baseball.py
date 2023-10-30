@@ -43,6 +43,16 @@ PITCHER_SPRITES = {
     "pitcher_stand_r" : pygame.image.load("assets/pitcher/pitcher_stand_r.png")
 }
 
+RUNNER_SPRITES = {
+    "runner_run_dr_1" : pygame.image.load("assets/runner/runner_run_dr_1.png"),
+    "runner_run_dr_2" : pygame.image.load("assets/runner/runner_run_dr_2.png"),
+    "runner_run_dr_3" : pygame.image.load("assets/runner/runner_run_dr_3.png"),
+    "runner_run_ur_1" : pygame.image.load("assets/runner/runner_run_ur_1.png"),
+    "runner_run_ur_2" : pygame.image.load("assets/runner/runner_run_ur_2.png"),
+    "runner_run_ur_3" : pygame.image.load("assets/runner/runner_run_ur_3.png"),
+    "runner_stand" : pygame.image.load("assets/runner/runner_stand.png")
+}
+
 class Game:
     def save_screenshot(self, filename="print"):
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S_")
@@ -53,9 +63,9 @@ class Game:
         pygame.display.flip()
     
     def ball_is_hit(self):
-        self.team_offense[self.curr_batter] = Runner(x=BATTER_INITIAL_X, y=BATTER_INITIAL_Y, sprites_dict=BATTER_SPRITES, game=self)
-        batter = self.team_offense[self.curr_batter]
-        batter.go_to_first_base()
+        self.team_offense[self.curr_batter] = Runner(x=BATTER_INITIAL_X, y=BATTER_INITIAL_Y, sprites_dict=RUNNER_SPRITES, game=self)
+        runner = self.team_offense[self.curr_batter]
+        runner.run_to_base()
         if (self.curr_batter == 9):
             self.curr_batter = 0
         else:

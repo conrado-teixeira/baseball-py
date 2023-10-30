@@ -13,6 +13,7 @@ class Player(Renderizable):
         super().__init__(x, y, sprites_dict, initial_sprite)
         self.game = game
         self.animation_delay = 100
+        self.speed = 5
 
     def get_center(self):
         return (
@@ -28,25 +29,51 @@ class Player(Renderizable):
     def _animate_run(self, destination):
         def arrival():
             return self.get_center()[0] == dest_x and self.get_center()[1] == dest_y
+        
+        animations = {
+            "runner_back" : ["runner_run_ur_1", "runner_run_ur_2", "runner_run_ur_3"],
+            "runner_front" : ["runner_run_dr_1", "runner_run_dr_2", "runner_run_dr_3"]
+        }
                 
         dest_x, dest_y = destination
 
+        animation_loop = []
+        animation_step = 0
         while not arrival():
-            pygame.time.delay(self.animation_delay)
             # GET THE VECTOR
             center = self.get_center()
             dx = dest_x - center[0]
             dy = dest_y - center[1]
+
+
             # NORMALIZE THE VECTOR
             distance = (dx ** 2 + dy ** 2) ** 0.5
             dx /= distance
             dy /= distance
-            # MOVE ALONG VECTOR
+
+            # SET ANIMATION FRAMES ACCORDING TO VECTOR
+            if dx > 0 and dy < 0:
+                animation_loop = animations["runner_back"]
+            elif dx > 0 and dy > 0:
+                animation_loop = animations["runner_front"]
+            self.curr_sprite = animation_loop[animation_step]
+            
+            # MOVE ALONG VECTOR WHILE CHANGING SPRITES
             if distance <= self.speed:
                 self.position_by_center(destination)
+                self.curr_sprite = "runner_stand"
             else:
                 self.x += dx * self.speed
                 self.y += dy * self.speed
+                animation_step += 1
+                if (animation_step == len(animation_loop)):
+                    animation_step = 0
+                self.curr_sprite = animation_loop[animation_step]
+            
+            self.set_image()
+            self.game.update_display()  # Render the frame
+            pygame.time.delay(self.animation_delay)
+
         
 class BaseballBat(Renderizable):
     def __init__(self, x, y):
@@ -153,7 +180,7 @@ class Batter(Player):
             "bunt_C" : ["batter_stand", "batter_swing_3", "batter_swing_3", "batter_swing_3", "batter_swing_3", "batter_swing_3", "batter_stand"],
             "bunt_L" : ["batter_stand", "batter_swing_4", "batter_swing_4", "batter_swing_4", "batter_swing_4", "batter_swing_4", "batter_stand"],
             "bunt_R" : ["batter_stand", "batter_swing_2", "batter_swing_2", "batter_swing_2", "batter_swing_2", "batter_swing_2", "batter_stand"],
-            "swing" : ["batter_stand", "batter_swing_1", "batter_swing_2", "batter_swing_3", "batter_swing_4", "batter_swing_5", "batter_swing_5", "batter_swing_5", "batter_swing_5", "batter_stand"],
+            "swing" : ["batter_stand", "batter_swing_1", "batter_swing_2", "batter_swing_3", "batter_swing_4", "batter_swing_5", "batter_swing_5", "batter_swing_5", "batter_swing_5", "batter_stand"]
         }
         for frame in animations[swing]:
             self.curr_sprite = frame
@@ -168,13 +195,14 @@ class Batter(Player):
         self.batting = False
 
 class Runner(Player):
-    def __init__(self, x, y, sprites_dict, game):
-        super().__init__(x, y, sprites_dict, "batter_stand", game)
-        self.speed = 5
+    def __init__(self, x, y, sprites_dict, game, current_base=0):
+        super().__init__(x, y, sprites_dict, "runner_run_ur_1", game)
+        self.curr_base = current_base
         # Add any additional attributes or methods specific to the Runner class here
 
-    def go_to_first_base(self):
-        base_coordinates = (self.game.park.bases[1].x, self.game.park.bases[1].y)
+    def run_to_base(self):
+        target_base = self.curr_base+1
+        base_coordinates = (self.game.park.bases[target_base].x, self.game.park.bases[target_base].y)
         thread = Thread(target=self._animate_run(base_coordinates))
         thread.start()
         
