@@ -2,7 +2,7 @@ from Renderizable import Renderizable
 
 class Background(Renderizable):
     def __init__(self, x, y, sprites_dict):
-        super().__init__(x, y, sprites_dict, "stadium")
+        super().__init__(x, y, 0, sprites_dict, "stadium")
         
 class Base:
     def __init__(self, x, y):

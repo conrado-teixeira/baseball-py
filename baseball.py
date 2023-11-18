@@ -15,9 +15,11 @@ os.chdir(directory_path)
 
 BALL_INITIAL_X = 636
 BALL_INITIAL_Y = 554
+BALL_INITIAL_Z = 10
 
 BATTER_INITIAL_X = 603
 BATTER_INITIAL_Y = 663
+BATTER_INITIAL_Z = 0
 BATTER_SPRITES = {
     "batter_stand" : pygame.image.load("assets/batter/batter_stand.png"),
     "batter_swing_1" : pygame.image.load("assets/batter/batter_swing_1.png"), #windup
@@ -29,6 +31,7 @@ BATTER_SPRITES = {
 
 PITCHER_INITIAL_X = 617
 PITCHER_INITIAL_Y = 538
+PITCHER_INITIAL_Z = 0
 PITCHER_SPRITES = {
     "pitcher_look_c" : pygame.image.load("assets/pitcher/pitcher_look_c.png"),
     "pitcher_look_r" : pygame.image.load("assets/pitcher/pitcher_look_r.png"),
@@ -77,8 +80,7 @@ class Game:
         else:
             self.team_offense[self.curr_batter] = Batter(x=BATTER_INITIAL_X, y=BATTER_INITIAL_Y, sprites_dict=BATTER_SPRITES, game=self)
 
-    def __init__(self):
-        # Game Elements
+    def restart_game(self):
         self.team_offense = []
         self.curr_batter = 0
         self.set_batter()
@@ -87,17 +89,13 @@ class Game:
         ]
         self.batter = self.team_offense[self.curr_batter]
         self.pitcher = self.team_defense[0]
-        self.ball = Ball(BALL_INITIAL_X,BALL_INITIAL_Y,game=self)
+        self.ball = Ball(BALL_INITIAL_X, BALL_INITIAL_Y, BALL_INITIAL_Z, game=self)
         self.park = Park()
-        # Initialize game
-        pygame.init()
-        # Game window
-        self.window = Window()
-        
+
+    def run_game_loop(self):
         # Game loop
         clock = pygame.time.Clock()
         running = True
-
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -117,16 +115,54 @@ class Game:
                         self.pitcher.pitch("changeup")
                     elif event.key == pygame.K_b:
                         self.batter.bat()
+                        self.batter.bat()
                     elif event.key == pygame.K_UP:
-                        self.batter.bat("bunt_C")
+                        print(event.key)
+                    elif event.key == pygame.K_DOWN:
+                        print(event.key)
                     elif event.key == pygame.K_LEFT:
-                        self.batter.bat("bunt_L")
+                        self.pitcher.move_left()
                     elif event.key == pygame.K_RIGHT:
+                        self.pitcher.move_right()
+                    elif event.key == pygame.K_h:
+                        self.batter.bat("bunt_C")
+                    elif event.key == pygame.K_g:
+                        self.batter.bat("bunt_L")
+                    elif event.key == pygame.K_j:
                         self.batter.bat("bunt_R")
+                    elif event.key == pygame.K_PAGEUP:
+                        self.ball.adjust_z(10)
+                    elif event.key == pygame.K_PAGEDOWN:
+                        self.ball.adjust_z(-10)
+                    elif event.key == pygame.K_r:
+                        # Restart the game when 'R' is pressed
+                        self.restart_game()
 
             self.update_display()
             # Cap the frame rate
             clock.tick(60)
+            
+    def __init__(self):
+        # Game Elements
+        self.team_offense = []
+        self.curr_batter = 0
+        self.set_batter()
+        self.team_defense = [
+            Pitcher(x=PITCHER_INITIAL_X, y=PITCHER_INITIAL_Y, sprites_dict=PITCHER_SPRITES, game=self)
+        ]
+        self.batter = self.team_offense[self.curr_batter]
+        self.pitcher = self.team_defense[0]
+        self.ball = Ball(BALL_INITIAL_X,BALL_INITIAL_Y,10,game=self)
+        self.park = Park()
+        # Initialize game
+        pygame.init()
+        # Game window
+        self.window = Window()
+        
+        
+        
+
+        self.run_game_loop()
 
         # Quit the game
         pygame.quit()

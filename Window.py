@@ -1,7 +1,10 @@
 import pygame
 from Background import Background
+import os
 
-BG_SPRITES = {"stadium" : pygame.image.load("stadium.jpg")}
+directory_path = os.path.dirname(os.path.abspath(__file__))
+os.chdir(directory_path)
+BG_SPRITES = {"stadium" : pygame.image.load(os.path.join(directory_path,"stadium.jpg"))}
 
 class Window:
     def __init__(self):

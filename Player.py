@@ -9,9 +9,10 @@ import pygame
 #     return rotated_surface
 
 class Player(Renderizable):
-    def __init__(self, x, y, sprites_dict, initial_sprite, game):
-        super().__init__(x, y, sprites_dict, initial_sprite)
+    def __init__(self, x, y, z, sprites_dict, initial_sprite, game):
+        super().__init__(x, y, z, sprites_dict, initial_sprite)
         self.game = game
+        self.hasBall = False
         self.animation_delay = 100
         self.speed = 5
 
@@ -97,14 +98,14 @@ class BaseballBat(Renderizable):
         bat_swing_4 = pygame.transform.rotate(bat_swing_4, 30)
 
         # Store the sprites in a dictionary
-        sprites = {
+        bat_sprites = {
             "stand": bat_stand,
             "swing_2": bat_swing_2,
             "swing_3": bat_swing_3,
             "swing_4": bat_swing_4
         }
 
-        super().__init__(x, y, sprites, "stand")
+        super().__init__(x, y, 0, bat_sprites, "stand")
         self.initial_x = x
         self.initial_y = y
         self.hidden = True
@@ -149,7 +150,7 @@ class Batter(Player):
         self.baseball_bat.render(screen)
     
     def __init__(self, x, y, sprites_dict, game):
-        super().__init__(x, y, sprites_dict, "batter_stand", game)
+        super().__init__(x, y, 0, sprites_dict, "batter_stand", game)
         self.baseball_bat = BaseballBat(x+20,y+3)
         self.batting = False
 
@@ -196,9 +197,8 @@ class Batter(Player):
 
 class Runner(Player):
     def __init__(self, x, y, sprites_dict, game, current_base=0):
-        super().__init__(x, y, sprites_dict, "runner_run_ur_1", game)
+        super().__init__(x, y, 0, sprites_dict, "runner_run_ur_1", game)
         self.curr_base = current_base
-        # Add any additional attributes or methods specific to the Runner class here
 
     def run_to_base(self):
         target_base = self.curr_base+1
@@ -208,14 +208,29 @@ class Runner(Player):
         
 class Pitcher(Player):
     def __init__(self, x, y, sprites_dict, game):
-        super().__init__(x, y, sprites_dict, "pitcher_stand_c", game)
-        self.pitching = False  # Flag to control the animation
+        super().__init__(x, y, 0, sprites_dict, "pitcher_stand_c", game)
+        # Flags to control the animation
+        self.pitching = False
+        self.hasBall = True
+
+    def move_left(self):
+        self.x -= 1  # Adjust the value as needed
+        self.game.ball.initial_coordinates[0] -= 1
+        if self.hasBall:
+            self.game.ball.x -= 1
+
+    def move_right(self):
+        self.x += 1  # Adjust the value as needed
+        self.game.ball.initial_coordinates[0] += 1
+        if self.hasBall:
+            self.game.ball.x += 1
 
     def pitch(self, pitch="fastball"):
-        if self.game.ball.x == self.game.ball.initial_x and self.game.ball.y == self.game.ball.initial_y:
+        if self.hasBall:
             self.pitching = True
+            self.hasBall = False
             thread = Thread(target=self._animate_pitch(pitch))
-            thread.start()# Animate the batting action
+            thread.start()# Animate the pitching action
 
     def _animate_pitch(self, pitch):
         animation = [
@@ -238,7 +253,7 @@ class Pitcher(Player):
             if i == 4:
                 # Show the ball at the specified position on the fourth step
                 thread = Thread(target=self.game.ball._animate_pitch, args=[pitch])
-                thread.start()# Animate the batting action
+                thread.start()# Animate the pitching action
             pygame.time.delay(self.animation_delay)  # Delay to control animation speed
         # Volta pra posição inicial            
         self.pitching = False  # Reset the flag when animation is complete
