@@ -2,8 +2,9 @@ from Renderizable import Renderizable
 import pygame
 import math
 
-BALL_HEIGHT = 5
-BALL_WIDTH = 5
+BALL_HEIGHT = 4
+BALL_WIDTH = 4
+GRAVITY = -1
 
 class Ball(Renderizable):
     def __init__(self, x, y, z, game):
@@ -20,6 +21,14 @@ class Ball(Renderizable):
         self.batted = False
         self.animation_delay = 100  # Adjust the delay to control animation speed
 
+    def set_speed(self, speed_vector):
+        for i in range(3):
+            self.speed_vector[i] = speed_vector[i]
+
+    def accelerate(self, acceleration_vector):
+        """acceleration_vector = [x,y,z]"""
+        for i in range(3):
+            self.speed_vector[i] += acceleration_vector[i]
 
     def move(self):
         self.x += self.speed_vector[0]
@@ -59,26 +68,29 @@ class Ball(Renderizable):
         # Hide the ball (make it transparent)
         self.hidden = True
 
-    def fastball(self):
-        self.speed_vector[0] = 0
-        self.speed_vector[1] = 10
+    def constant_speed_pitch_animation(self, speed_vector):
+        self.set_speed(speed_vector)
         self.move()
 
-    def slider(self):
-        self.speed_vector[0] = 0.5
-        self.speed_vector[1] = 10
-        self.move()
+    def fourseam_fastball_animation(self):
+        fourseam_speed = [0,10,0]
+        self.constant_speed_pitch_animation(fourseam_speed)
+
+    def slider_animation(self):
+        slider_speed = [0.5,10,0]
+        self.constant_speed_pitch_animation(slider_speed)
+    
+    def decelerating_pitch_animation(self, speed_vector, acceleration_vector, minimum_speeds_vector):
+        self.constant_speed_pitch_animation(speed_vector)
+        self.accelerate(acceleration_vector)
+        for i in range(3):
+            self.speed_vector[i] = max(self.speed_vector[i], minimum_speeds_vector[i])
     
     def changeup(self):
-        self.speed_vector[0] = -0.25  # Change X to simulate movement
-        self.speed_vector[1] = 10
-        self.move()
-        # decrease speed
-        self.speed_vector[1] *= 0.97  # Decrease speed with an exponential decay
-        # Ensure y_speed never goes below a minimum threshold
-        min_y_speed = 8  # Adjust this threshold as needed
-        self.speed_vector[1] = max(self.speed_vector[1], min_y_speed)
-        self.speed_vector[1] = self.speed_vector[1] * 0.99  # Decrease speed
+        changeup_speed = [-0.25,10,0]
+        changeup_acceleration = [0, self.speed_vector[1] * 0.03, 0]
+        changeup_min_speed = [changeup_speed[0], 8, changeup_speed[2]]
+        self.decelerating_pitch_animation(changeup_speed, changeup_acceleration, changeup_min_speed)
         
     def reset_speed(self):
         self.speed_vector[0] = 0
@@ -121,10 +133,10 @@ class Ball(Renderizable):
         # GOING TOWARDS THE PLATE
         while self.y < 722 and not self.caught and not self.batted:
             pygame.time.delay(self.animation_delay)
-            if pitch == "fastball":
-                self.fastball()
+            if pitch == "forseam_fastball":
+                self.fourseam_fastball_animation()
             elif pitch == "slider":
-                self.slider()
+                self.slider_animation()
             elif pitch == "changeup":
                 self.changeup()
             self.calculate_shadow_position()  # Update shadow position when moving

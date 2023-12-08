@@ -108,7 +108,7 @@ class Game:
                 elif event.type == pygame.KEYDOWN:
                     # PITCHES
                     if event.key == pygame.K_p:
-                        self.pitcher.pitch()
+                        self.pitcher.pitch("forseam_fastball")
                     elif event.key == pygame.K_s:
                         self.pitcher.pitch("slider")
                     elif event.key == pygame.K_c:
