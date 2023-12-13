@@ -42,23 +42,17 @@ class Ball(Renderizable):
             self.x += self.speed_vector[0]
             self.y += self.speed_vector[1]
             self.z += self.speed_vector[2]
-        self.calculate_shadow_position()
-
-    def calculate_shadow_position(self):
-        # Calculate shadow position based on Z coordinate
-        self.shadow_x = self.x
-        self.shadow_y = self.y + self.shadow_offset * (self.z / 10)  # Adjust the factor as needed
 
     def render(self, screen):
-        if not self.hidden:
-            # Calculate size based on Z coordinate
-            size_factor = max([1, 1 + self.z / 10, 2])  # Adjust the factor as needed
+        if self.hidden:
+            return
+        # Calculate ball size based on Z coordinate
+        size_factor = max([1, 1 + self.z / 50])  # Adjust the factor as needed
 
-            # Draw the ball with the calculated size
-            pygame.draw.circle(screen, self.color, (int(self.x), int(self.y)), int(self.radius * size_factor))
+        # Draw the ball with the calculated size
+        pygame.draw.circle(screen, self.color, (int(self.x), int(self.y)), int(self.radius * size_factor))
 
-            self.calculate_shadow_position()
-            self.render_shadow(screen)
+        self.render_shadow(screen)
 
     def reset_position(self):
         self.x, self.y, self.z = self.initial_coordinates
@@ -144,7 +138,6 @@ class Ball(Renderizable):
                 self.slider_animation()
             elif pitch == "changeup":
                 self.changeup()
-            self.calculate_shadow_position()  # Update shadow position when moving
 
         # CONTACT
         if self.game.state["batted"]:

@@ -2,12 +2,6 @@ from Renderizable import Renderizable
 from threading import Thread  # Import Thread for concurrent animations
 import pygame
 
-# def rotate_around_center(surface, angle, center_x, center_y):
-#     rotated_surface = pygame.transform.rotate(surface, angle)
-#     rotated_rect = rotated_surface.get_rect()
-#     rotated_rect.center = (center_x, center_y)
-#     return rotated_surface
-
 class Player(Renderizable):
     def __init__(self, x, y, z, sprites_dict, initial_sprite, game):
         super().__init__(x, y, z, sprites_dict, initial_sprite)
@@ -131,22 +125,13 @@ class BaseballBat(Renderizable):
             self.set_image()
 
     def get_bat_rect(self):
-        angle = 0
-        if self.curr_sprite == "swing_2":
-            angle = -30
-        elif self.curr_sprite == "swing_4":
-            angle = 30
         bat_rect = self.image.get_rect()  # Use the image attribute of the baseball_bat
         bat_rect.topleft = (self.x, self.y)  # Set the position of the Rect
         return bat_rect
-    
-    def render(self, screen):
-        if not self.hidden:
-            screen.blit(self.image, (self.x, self.y))
 
 class Batter(Player):
     def render(self, screen):
-        screen.blit(self.image, (self.x, self.y))
+        Renderizable.render(self, screen)
         self.baseball_bat.render(screen)
     
     def __init__(self, x, y, sprites_dict, game):
