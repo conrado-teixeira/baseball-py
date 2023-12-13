@@ -14,10 +14,8 @@ class Window:
         h = self.background.image.get_height()
         self.screen = pygame.display.set_mode((w, h))
 
-    def render(self, gameObjects):
-        self.background.render(self.screen)
-        for obj in gameObjects[0] + gameObjects[1]:
+    def render(self, renderList):
+        for obj in renderList:
             obj.render(self.screen)
-        gameObjects[2].render(self.screen)
                        
     pass

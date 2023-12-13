@@ -105,7 +105,7 @@ class BaseballBat(Renderizable):
             "swing_4": bat_swing_4
         }
 
-        super().__init__(x, y, 0, bat_sprites, "stand")
+        super().__init__(x, y, 0, bat_sprites, "stand", cast_shadow=False)
         self.initial_x = x
         self.initial_y = y
         self.hidden = True
@@ -155,11 +155,10 @@ class Batter(Player):
         self.batting = False
 
     def check_for_hit(self, ball):
-        if self.batting and not ball.caught and not ball.batted:
+        if self.batting and not ball.caught and self.game.state["pitch"]:
             ball_rect = pygame.Rect(ball.x, ball.y, ball.image.get_width(), ball.image.get_height())
             bat_rect = self.baseball_bat.get_bat_rect()
             if ball_rect.colliderect(bat_rect):
-                ball.batted = True
                 self.game.ball_is_hit()
                 print(f"CONTACT AT {self.curr_sprite}!")
             else:
@@ -225,9 +224,10 @@ class Pitcher(Player):
         if self.hasBall:
             self.game.ball.x += 1
 
-    def pitch(self, pitch="fastball"):
+    def pitch(self, pitch="4s_fastball"):
         if self.hasBall:
             self.pitching = True
+            self.game.setState("pitch")
             self.hasBall = False
             thread = Thread(target=self._animate_pitch(pitch))
             thread.start()# Animate the pitching action

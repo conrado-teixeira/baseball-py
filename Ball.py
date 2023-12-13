@@ -18,7 +18,6 @@ class Ball(Renderizable):
         self.speed_vector = [0.5, 10, 0]
         self.hidden = True
         self.caught = False
-        self.batted = False
         self.animation_delay = 100  # Adjust the delay to control animation speed
 
     def set_speed(self, speed_vector):
@@ -27,17 +26,23 @@ class Ball(Renderizable):
 
     def accelerate(self, acceleration_vector):
         """acceleration_vector = [x,y,z]"""
+        if self.z == 0:
+            acceleration_vector[2] = acceleration_vector[2] * -1
         for i in range(3):
             self.speed_vector[i] += acceleration_vector[i]
+        if self.z == 0:
+            self.speed_vector[2] = 0
 
-    def move(self):
-        self.x += self.speed_vector[0]
-        self.y += self.speed_vector[1]
-        self.z += self.speed_vector[2]
+    def move(self, speed = []):
+        if speed:
+            self.x += speed[0]
+            self.y += speed[1]
+            self.z += speed[2]
+        else:
+            self.x += self.speed_vector[0]
+            self.y += self.speed_vector[1]
+            self.z += self.speed_vector[2]
         self.calculate_shadow_position()
-
-    def adjust_z(self, delta_z):
-        self.z += delta_z
 
     def calculate_shadow_position(self):
         # Calculate shadow position based on Z coordinate
@@ -47,14 +52,14 @@ class Ball(Renderizable):
     def render(self, screen):
         if not self.hidden:
             # Calculate size based on Z coordinate
-            size_factor = max(1, 1 + self.z / 10)  # Adjust the factor as needed
+            size_factor = max([1, 1 + self.z / 10, 2])  # Adjust the factor as needed
 
             # Draw the ball with the calculated size
             pygame.draw.circle(screen, self.color, (int(self.x), int(self.y)), int(self.radius * size_factor))
 
-            # Draw shadow
-            pygame.draw.circle(screen, self.shadow_color, (int(self.shadow_x), int(self.shadow_y)), int(self.radius * size_factor))
-    
+            self.calculate_shadow_position()
+            self.render_shadow(screen)
+
     def reset_position(self):
         self.x, self.y, self.z = self.initial_coordinates
         self.reset_speed()
@@ -131,9 +136,9 @@ class Ball(Renderizable):
         self.show()
 
         # GOING TOWARDS THE PLATE
-        while self.y < 722 and not self.caught and not self.batted:
+        while self.y < 722 and not self.caught and self.game.state["pitch"]:
             pygame.time.delay(self.animation_delay)
-            if pitch == "forseam_fastball":
+            if pitch == "4s_fastball":
                 self.fourseam_fastball_animation()
             elif pitch == "slider":
                 self.slider_animation()
@@ -142,12 +147,13 @@ class Ball(Renderizable):
             self.calculate_shadow_position()  # Update shadow position when moving
 
         # CONTACT
-        if self.batted:
+        if self.game.state["batted"]:
             self.hit_by_bat(pitch=pitch)
             while self.y > 0:  # HOME RUN
                 self.speed_vector[2] = 10
+                self.accelerate([0,0,-1])
                 self.move()
                 pygame.time.delay(self.animation_delay)
-            self.batted = False
+            self.game.new_ab()
 
         self.reset_position()

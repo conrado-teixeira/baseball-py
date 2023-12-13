@@ -57,22 +57,33 @@ RUNNER_SPRITES = {
 }
 
 class Game:
+    def new_ab(self):
+        self.setState("wait_4_pitch")
+        if (self.curr_batter == 8):
+            self.curr_batter = 0
+        else:
+            self.curr_batter += 1
+        self.set_batter()
+
     def save_screenshot(self, filename="print"):
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S_")
         pygame.image.save(self.window.screen, f"prints/{timestamp}{filename}.jpg")
     
     def update_display(self):
-        self.window.render(gameObjects = [self.team_defense, self.team_offense, self.ball])
+        self.window.render([self.window.background])
+        self.window.render(self.team_defense + self.team_offense)
+        self.window.render([self.ball])
         pygame.display.flip()
     
+    def setState(self, state):
+        for k in  self.state.keys():
+            self.state[k] = k == state
+
     def ball_is_hit(self):
+        self.setState("batted")
         self.team_offense[self.curr_batter] = Runner(x=BATTER_INITIAL_X, y=BATTER_INITIAL_Y, sprites_dict=RUNNER_SPRITES, game=self)
         runner = self.team_offense[self.curr_batter]
-        runner.run_to_base()
-        if (self.curr_batter == 9):
-            self.curr_batter = 0
-        else:
-            self.curr_batter += 1      
+        runner.run_to_base()     
 
     def set_batter(self):
         if (len(self.team_offense) <= self.curr_batter):
@@ -108,7 +119,7 @@ class Game:
                 elif event.type == pygame.KEYDOWN:
                     # PITCHES
                     if event.key == pygame.K_p:
-                        self.pitcher.pitch("forseam_fastball")
+                        self.pitcher.pitch("4s_fastball")
                     elif event.key == pygame.K_s:
                         self.pitcher.pitch("slider")
                     elif event.key == pygame.K_c:
@@ -131,9 +142,9 @@ class Game:
                     elif event.key == pygame.K_j:
                         self.batter.bat("bunt_R")
                     elif event.key == pygame.K_PAGEUP:
-                        self.ball.adjust_z(10)
+                        self.ball.move([0,0,10])
                     elif event.key == pygame.K_PAGEDOWN:
-                        self.ball.adjust_z(-10)
+                        self.ball.move([0,0,-10])
                     elif event.key == pygame.K_r:
                         # Restart the game when 'R' is pressed
                         self.restart_game()
@@ -143,6 +154,12 @@ class Game:
             clock.tick(60)
             
     def __init__(self):
+        # Game State
+        self.state = {
+            "wait_4_pitch" : True,
+            "pitch" : False,
+            "batted" : False
+        }
         # Game Elements
         self.team_offense = []
         self.curr_batter = 0
