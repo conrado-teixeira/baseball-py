@@ -70,9 +70,10 @@ class Game:
         pygame.image.save(self.window.screen, f"prints/{timestamp}{filename}.jpg")
     
     def update_display(self):
-        self.window.render([self.window.background])
-        self.window.render(self.team_defense + self.team_offense)
-        self.window.render([self.ball])
+        self.window.render(renderList= [self.window.background])
+        self.window.render(renderList = self.team_defense + self.team_offense)
+        self.window.render(renderList = [self.ball])
+        self.window.render(radar_ball = self.ball)
         pygame.display.flip()
     
     def setState(self, state):

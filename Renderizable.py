@@ -16,12 +16,12 @@ class Renderizable:
         self.shadow_color = (10, 10, 10)  # Shadow color
         self.shadow_offset = 10  # Adjust this value to control the shadow offset
 
-    def render_shadow(self, screen):
+    def render_shadow(self, screen, radius=2):
         if self.cast_shadow:
             self.shadow_x = self.x + self.image.get_rect().center[0]
             self.shadow_y = self.y + self.image.get_rect().center[1] + self.shadow_offset + self.z/5
             
-            pygame.draw.circle(screen,self.shadow_color,(int(self.shadow_x), int(self.shadow_y)),5)
+            pygame.draw.circle(screen,self.shadow_color,(int(self.shadow_x), int(self.shadow_y)),radius)
 
     def render(self, screen):
         if self.hidden:

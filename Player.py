@@ -69,6 +69,7 @@ class Player(Renderizable):
             self.game.update_display()  # Render the frame
             pygame.time.delay(self.animation_delay)
 
+    pass
         
 class BaseballBat(Renderizable):
     def __init__(self, x, y):
@@ -129,6 +130,8 @@ class BaseballBat(Renderizable):
         bat_rect.topleft = (self.x, self.y)  # Set the position of the Rect
         return bat_rect
 
+    pass
+
 class Batter(Player):
     def render(self, screen):
         Renderizable.render(self, screen)
@@ -179,6 +182,8 @@ class Batter(Player):
         self.baseball_bat.reset_position() # DESCOMENTAR PRA VOLTAR A ANIMAÇÃO
         self.batting = False
 
+    pass
+
 class Runner(Player):
     def __init__(self, x, y, sprites_dict, game, current_base=0):
         super().__init__(x, y, 0, sprites_dict, "runner_run_ur_1", game)
@@ -189,7 +194,9 @@ class Runner(Player):
         base_coordinates = (self.game.park.bases[target_base].x, self.game.park.bases[target_base].y)
         thread = Thread(target=self._animate_run(base_coordinates))
         thread.start()
-        
+
+    pass
+
 class Pitcher(Player):
     def __init__(self, x, y, sprites_dict, game):
         super().__init__(x, y, 0, sprites_dict, "pitcher_stand_c", game)
@@ -242,3 +249,5 @@ class Pitcher(Player):
             pygame.time.delay(self.animation_delay)  # Delay to control animation speed
         # Volta pra posição inicial            
         self.pitching = False  # Reset the flag when animation is complete
+
+    pass

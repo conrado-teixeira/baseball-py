@@ -52,7 +52,7 @@ class Ball(Renderizable):
         # Draw the ball with the calculated size
         pygame.draw.circle(screen, self.color, (int(self.x), int(self.y)), int(self.radius * size_factor))
 
-        self.render_shadow(screen)
+        self.render_shadow(screen, radius = 1)
 
     def reset_position(self):
         self.x, self.y, self.z = self.initial_coordinates
@@ -150,3 +150,5 @@ class Ball(Renderizable):
             self.game.new_ab()
 
         self.reset_position()
+
+    pass
